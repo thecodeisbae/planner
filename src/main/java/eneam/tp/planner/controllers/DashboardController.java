@@ -63,7 +63,6 @@ public class DashboardController {
                 LocalDateTime.now(), 
                 LocalDateTime.now().plusDays(7));
         
-        // Ajouter les données au modèle
         model.addAttribute("totalConducteurs", conducteurs.size());
         model.addAttribute("totalVehicules", vehicules.size());
         model.addAttribute("totalMissions", missions.size());

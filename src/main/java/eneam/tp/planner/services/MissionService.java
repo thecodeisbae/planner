@@ -65,6 +65,22 @@ public class MissionService {
     
     // Créer une nouvelle mission avec vérification des chevauchements
     public Mission createMission(Mission mission) {
+        // Validation des champs obligatoires
+        if (mission == null) {
+            throw new IllegalArgumentException("La mission ne peut pas être nulle");
+        }
+        
+        if (mission.getConducteur() == null || mission.getConducteur().getId() == null) {
+            throw new IllegalArgumentException("Un conducteur doit être sélectionné");
+        }
+        
+        if (mission.getVehicule() == null || mission.getVehicule().getId() == null) {
+            throw new IllegalArgumentException("Un véhicule doit être sélectionné");
+        }
+        
+        if (mission.getDescription() == null || mission.getDescription().isEmpty()) {
+            throw new IllegalArgumentException("La description est obligatoire");
+        }
         // Récupérer le conducteur et le véhicule
         Conducteur conducteur = conducteurService.getConducteurById(mission.getConducteur().getId());
         Vehicule vehicule = vehiculeService.getVehiculeById(mission.getVehicule().getId());

@@ -205,20 +205,5 @@ public class DataInitializer {
             
             userRepository.save(adminUser);
         }
-        
-        // Créer un utilisateur standard par défaut s'il n'existe pas
-        if (userRepository.findByUsername("user").isEmpty()) {
-            User standardUser = new User();
-            standardUser.setUsername("user");
-            standardUser.setPassword(passwordEncoder.encode("user123"));
-            standardUser.setEmail("user@missions.com");
-            standardUser.setFullName("Utilisateur Standard");
-            standardUser.setEnabled(true);
-            
-            Role userRole = roleRepository.findByName("USER").orElseThrow();
-            standardUser.setRoles(Set.of(userRole));
-            
-            userRepository.save(standardUser);
-        }
     }
 }

@@ -16,7 +16,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -495,7 +494,11 @@ public class WebControllers {
             return "redirect:/web/missions";
         } catch (MissionChevauchementException exception) {
             redirectAttributes.addFlashAttribute("mission", mission);
-            redirectAttributes.addFlashAttribute("error", exception.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
+            return "redirect:/web/missions/new";
+        } catch (IllegalArgumentException exception) {
+            redirectAttributes.addFlashAttribute("mission", mission);
+            redirectAttributes.addFlashAttribute("errorMessage", exception.getMessage());
             return "redirect:/web/missions/new";
         }
     }
