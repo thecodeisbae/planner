@@ -36,7 +36,6 @@ Le Système de Gestion des Missions est une application Java EE conçue pour gé
 ### Gestion des véhicules
 - Inventaire de la flotte de véhicules
 - Association des véhicules aux types de missions
-- Suivi de l'état et de la maintenance
 
 ### Planification des missions
 - Création de nouvelles missions avec assignation de conducteur et véhicule
@@ -62,7 +61,7 @@ Le Système de Gestion des Missions est une application Java EE conçue pour gé
 ### Cloner le dépôt
 
 ```bash
-git clone https://github.com/votre-organisation/planner.git
+git clone https://github.com/thecodeisbae/planner.git
 cd planner
 ```
 
@@ -97,6 +96,12 @@ Le fichier JAR exécutable sera généré dans le répertoire `target/`.
 ### Mode de développement avec H2 (par défaut)
 
 Par défaut, l'application utilise une base de données H2 en mémoire, configurée dans le fichier `application-dev.properties`. Aucune configuration supplémentaire n'est nécessaire pour commencer à développer.
+
+Démarrage de l'application : 
+
+```bash
+./mvnw spring-boot:run -Dspring.profiles.active=dev
+```
 
 ### Configuration pour la production avec MySQL
 
@@ -134,17 +139,13 @@ Ou au démarrage de l'application :
 
 ### Utilisateurs par défaut
 
-L'application crée automatiquement deux utilisateurs par défaut au démarrage :
+L'application crée automatiquement un utilisateur par défaut au démarrage :
 
 1. Administrateur
    - Nom d'utilisateur : `admin`
    - Mot de passe : `admin123`
-   - Rôles : ADMIN, USER
+   - Rôle : ADMIN
 
-2. Utilisateur standard
-   - Nom d'utilisateur : `user`
-   - Mot de passe : `user123`
-   - Rôle : USER
 
 ## Structure du projet
 
@@ -323,21 +324,15 @@ Ou manuellement via l'interface d'administration à http://localhost:9990/consol
 Le cœur du système est l'algorithme qui vérifie les disponibilités des conducteurs :
 
 ```java
-public boolean verifierDisponibilite(Conducteur conducteur, LocalDateTime debut, LocalDateTime fin) {
-    TypedQuery<Mission> query = em.createQuery(
-        "SELECT m FROM Mission m WHERE m.conducteur = :conducteur " +
-        "AND ((m.dateDebut <= :fin AND m.dateFin >= :debut) " +
-        "OR (m.dateDebut >= :debut AND m.dateDebut <= :fin) " +
-        "OR (m.dateFin >= :debut AND m.dateFin <= :fin))",
-        Mission.class);
-    
-    query.setParameter("conducteur", conducteur);
-    query.setParameter("debut", debut);
-    query.setParameter("fin", fin);
-    
-    List<Mission> missionsEnConflit = query.getResultList();
-    return missionsEnConflit.isEmpty();
-}
+@Query("SELECT m FROM Mission m WHERE m.conducteur.id = :conducteurId " +
+                     "AND m.statut != 'ANNULEE' " +
+                     "AND ((m.dateDebut BETWEEN :debut AND :fin) " +
+                     "OR (m.dateFin BETWEEN :debut AND :fin) " +
+                     "OR (:debut BETWEEN m.dateDebut AND m.dateFin))")
+       List<Mission> findChevauchementMissions(
+                     @Param("conducteurId") Long conducteurId,
+                     @Param("debut") LocalDateTime debut,
+                     @Param("fin") LocalDateTime fin);
 ```
 
 ## Contribution
@@ -362,4 +357,4 @@ Ce projet est sous licence [MIT](LICENSE).
 
 ## Contact
 
-Pour toute question ou suggestion, veuillez contacter l'équipe de développement à l'adresse : equipe@gestion-missions.com
+Pour toute question ou suggestion, veuillez contacter l'équipe de développement à l'adresse : thecodeisbae@gmail.com
