@@ -117,6 +117,10 @@ public class MissionService {
     public Mission updateMission(Long id, Mission missionDetails) {
         Mission mission = getMissionById(id);
         
+        // Récupérer le conducteur et le véhicule
+        Conducteur conducteur = conducteurService.getConducteurById(missionDetails.getConducteur().getId());
+        Vehicule vehicule = vehiculeService.getVehiculeById(missionDetails.getVehicule().getId());
+
         // Si le conducteur ou les dates changent, vérifier les chevauchements
         if (!mission.getConducteur().getId().equals(missionDetails.getConducteur().getId()) || 
             !mission.getDateDebut().equals(missionDetails.getDateDebut()) || 
@@ -137,7 +141,7 @@ public class MissionService {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
                 String periode = missionDetails.getDateDebut().format(formatter) + " - " + 
                                   missionDetails.getDateFin().format(formatter);
-                throw new MissionChevauchementException("Conducteur", missionDetails.getConducteur().getNom()+' '+missionDetails.getConducteur().getPrenom(), periode);
+                throw new MissionChevauchementException("Conducteur", conducteur.getNom()+' '+conducteur.getPrenom(), periode);
             }
         }
         
@@ -161,13 +165,9 @@ public class MissionService {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
                 String periode = missionDetails.getDateDebut().format(formatter) + " - " + 
                                   missionDetails.getDateFin().format(formatter);
-                throw new MissionChevauchementException("Véhicule", missionDetails.getVehicule().getImmatriculation(), periode);
+                throw new MissionChevauchementException("Véhicule", vehicule.getImmatriculation(), periode);
             }
         }
-        
-        // Récupérer le conducteur et le véhicule
-        Conducteur conducteur = conducteurService.getConducteurById(missionDetails.getConducteur().getId());
-        Vehicule vehicule = vehiculeService.getVehiculeById(missionDetails.getVehicule().getId());
         
         // Mettre à jour la mission
         mission.setDescription(missionDetails.getDescription());
