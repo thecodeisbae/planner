@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails Mission - Gestion des Missions</title>
+
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style th:replace="~{layout/main :: styles}"></style>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lexend', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- En-tête -->
+    <div th:replace="~{layout/main :: header}"></div>
+
+    <!-- Notification -->
+    <div th:replace="~{layout/main :: notification}"></div>
+    
+    <!-- Contenu principal -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        
+        <!-- Titre et actions -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">
+                    <i class="fas fa-clipboard-list mr-2"></i> 
+                    Détails de la mission
+                </h1>
+                <p class="text-gray-600" th:text="${mission.description}">Description de la mission</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a th:href="@{/web/missions/{id}/edit(id=${mission.id})}" 
+                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-edit mr-2"></i> Modifier
+                </a>
+                <button th:if="${mission.statut != 'ANNULEE' && 
+                               mission.statut != 'TERMINEE'}"
+                        type="button" 
+                        th:data-url="@{/web/missions/{id}/annuler(id=${mission.id})}"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                        x-data=""
+                        @click="if(confirm('Êtes-vous sûr de vouloir annuler cette mission ?')) { window.location.href = $el.dataset.url; }">
+                    <i class="fas fa-ban mr-2"></i> Annuler
+                </button>
+            </div>
+        </div>
+        
+        <!-- Statut de la mission -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-medium text-gray-800">Statut</h2>
+                    <span class="px-3 py-1 inline-flex text-sm font-semibold rounded-full mt-2"
+                          th:classappend="${mission.statut == 'EN_COURS' ? 'bg-green-100 text-green-800' : 
+                                          mission.statut == 'PLANIFIEE' ? 'bg-blue-100 text-blue-800' :
+                                          mission.statut == 'TERMINEE' ? 'bg-gray-100 text-gray-800' :
+                                          'bg-red-100 text-red-800'}"
+                          th:text="${mission.statut}">
+                        PLANIFIEE
+                    </span>
+                </div>
+                <div class="text-left sm:text-right">
+                    <p class="text-sm text-gray-500">Dernière mise à jour</p>
+                    <p class="text-lg font-medium" th:text="${#temporals.format(mission.dateDebut, 'dd/MM/yyyy HH:mm')}">01/01/2025 12:00</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informations de la mission -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Détails -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-lg font-medium text-gray-800 mb-4">Détails de la mission</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Description -->
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Description</p>
+                            <p class="text-lg font-medium break-words" th:text="${mission.description}">Description</p>
+                        </div>
+                        
+                        <!-- Destination -->
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Destination</p>
+                            <p class="text-lg font-medium break-words" th:text="${mission.destination}">Destination</p>
+                        </div>
+                        
+                        <!-- Dates -->
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Date de début</p>
+                            <div class="flex items-center">
+                                <i class="far fa-calendar-alt mr-2 text-gray-400"></i>
+                                <p class="text-lg font-medium" th:text="${#temporals.format(mission.dateDebut, 'dd/MM/yyyy HH:mm')}">
+                                    01/01/2025 12:00
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Date de fin</p>
+                            <div class="flex items-center">
+                                <i class="far fa-calendar-alt mr-2 text-gray-400"></i>
+                                <p class="text-lg font-medium" th:text="${#temporals.format(mission.dateFin, 'dd/MM/yyyy HH:mm')}">
+                                    01/01/2025 14:00
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Assignations -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-lg font-medium text-gray-800 mb-4">Assignations</h2>
+                    <div class="space-y-6">
+                        <!-- Conducteur -->
+                        <div>
+                            <p class="text-sm text-gray-500 mb-2">Conducteur</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user text-gray-400 mr-3"></i>
+                                    <div>
+                                        <p class="font-medium" th:text="${mission.conducteur.prenom + ' ' + mission.conducteur.nom}">
+                                            Jean Dupont
+                                        </p>
+                                        <p class="text-sm text-gray-500" th:text="${mission.conducteur.matricule}">C001</p>
+                                        <p class="text-sm text-gray-500" th:text="${mission.conducteur.telephone}">+229 00 00 00 00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Véhicule -->
+                        <div>
+                            <p class="text-sm text-gray-500 mb-2">Véhicule</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="fas fa-car text-gray-400 mr-3"></i>
+                                    <div>
+                                        <p class="font-medium" th:text="${mission.vehicule.marque + ' ' + mission.vehicule.modele}">
+                                            Renault Clio
+                                        </p>
+                                        <p class="text-sm text-gray-500" th:text="${mission.vehicule.immatriculation}">AA-123-BB</p>
+                                        <p class="text-sm text-gray-500" th:text="${mission.vehicule.type}">BERLINE</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Observations -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6" th:if="${mission.observations != null && !mission.observations.isEmpty()}">
+            <h2 class="text-lg font-medium text-gray-800 mb-4">
+                <i class="fas fa-comment-alt mr-2 text-gray-400"></i>
+                Observations
+            </h2>
+            <p class="text-gray-600 whitespace-pre-line" th:text="${mission.observations}">
+                Observations de la mission...
+            </p>
+        </div>
+        
+        <!-- Bouton retour -->
+        <div class="mt-6">
+            <a th:href="@{/web/missions}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors inline-flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
+            </a>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script th:replace="~{layout/main :: scripts}"></script>
+</body>
+</html>

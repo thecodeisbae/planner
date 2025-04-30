@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Conducteur - Gestion des Missions</title>
+
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style th:replace="~{layout/main :: styles}"></style>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lexend', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- En-tête -->
+    <div th:replace="~{layout/main :: header}"></div>
+    
+    <!-- Contenu principal -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        
+        <!-- Titre de la page -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-info-circle mr-2"></i> 
+                <span>Formulaire Conducteur</span>
+            </h1>
+            <p class="text-gray-600">Détails des informations du conducteur ci-dessous.</p>
+        </div>
+        
+        <!-- Formulaire -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+                <!-- Informations générales -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="matricule" class="block text-sm font-medium text-gray-700 mb-1">
+                            Matricule*
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-id-card text-gray-400"></i>
+                            </span>
+                            <input type="text" id="matricule" readonly th:field="${conducteur.matricule}" required
+                                   class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Saisir le matricule (ex: C001)">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Informations personnelles -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-medium text-gray-800 mb-3">Informations personnelles</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nom*
+                            </label>
+                            <input readonly type="text" id="nom" th:field="${conducteur.nom}" required
+                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Saisir le nom">
+                        </div>
+                        
+                        <div>
+                            <label for="prenom" class="block text-sm font-medium text-gray-700 mb-1">
+                                Prénom*
+                            </label>
+                            <input readonly type="text" id="prenom" th:field="${conducteur.prenom}" required
+                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Saisir le prénom">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Coordonnées -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-medium text-gray-800 mb-3">Coordonnées</h2>
+                    <div>
+                        <label for="telephone" class="block text-sm font-medium text-gray-700 mb-1">
+                            Téléphone
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-phone text-gray-400"></i>
+                            </span>
+                            <input readonly type="tel" id="telephone" th:field="${conducteur.telephone}"
+                                   class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Saisir le numéro de téléphone">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Options supplémentaires -->
+                <div class="mb-6" th:if="${conducteur.id != null}">
+                    <h2 class="text-lg font-medium text-gray-800 mb-3">Statistiques</h2>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex flex-wrap gap-4">
+                            <div class="bg-white px-4 py-3 rounded-lg shadow-sm">
+                                <p class="text-sm font-medium text-gray-500">Missions totales</p>
+                                <p class="text-2xl font-bold text-gray-800" th:text="${conducteur.missions != null ? conducteur.missions.size() : '0'}">0</p>
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg shadow-sm">
+                                <p class="text-sm font-medium text-gray-500">Missions actives</p>
+                                <p class="text-2xl font-bold text-green-600">
+                                    <span th:if="${missionsEnCours != null}" 
+                                          th:text="${missionsEnCours}">0</span>
+                                    <span th:if="${missionsEnCours == null}">0</span>
+                                </p>
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg shadow-sm">
+                                <p class="text-sm font-medium text-gray-500">Missions planifiées</p>
+                                <p class="text-2xl font-bold text-blue-600">
+                                    <span th:if="${missionsPlanifiees != null}" 
+                                          th:text="${missionsPlanifiees}">0</span>
+                                    <span th:if="${missionsPlanifiees== null}">0</span>
+                                </p>
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg shadow-sm">
+                                <p class="text-sm font-medium text-gray-500">Missions annulées</p>
+                                <p class="text-2xl font-bold text-red-600">
+                                    <span th:if="${missionsAnnulees != null}" 
+                                          th:text="${missionsAnnulees}">0</span>
+                                    <span th:if="${missionsAnnulees == null}">0</span>
+                                </p>
+                            </div>
+                            <div class="bg-white px-4 py-3 rounded-lg shadow-sm">
+                                <p class="text-sm font-medium text-gray-500">Missions terminées</p>
+                                <p class="text-2xl font-bold text-green-600">
+                                    <span th:if="${missionsTerminees != null}" 
+                                          th:text="${missionsTerminees}">0</span>
+                                    <span th:if="${missionsTerminees == null}">0</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="flex justify-between">
+                    <a th:href="@{/web/conducteurs}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

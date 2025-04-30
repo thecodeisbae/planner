@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title != null ? title + ' - Gestion des Missions' : 'Gestion des Missions'}">Gestion des Missions</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Flatpickr pour la sélection de date -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles personnalisés -->
+    <style th:fragment="styles">
+        [x-cloak] { display: none !important; }
+        .active-nav-link {
+            background-color: white!important;
+            color: #1E40AF!important;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-md" th:fragment="header">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="/" class="text-xl font-bold">Gestion des Missions</a>
+                
+                <!-- Navigation principale pour utilisateurs connectés -->
+                <nav class="hidden md:flex space-x-4" sec:authorize="isAuthenticated()">
+                    <a th:href="@{/web/dashboard}" class="px-3 py-2 rounded hover:bg-blue-700 transition" 
+                       th:classappend="${currentUrl.contains('/dashboard') ? 'active-nav-link' : ''}">
+                       <i class="fas fa-chart-line mr-1"></i> Tableau de bord
+                    </a>
+                    <a th:href="@{/web/conducteurs}" class="px-3 py-2 rounded hover:bg-blue-700 transition"
+                       th:classappend="${currentUrl.contains('/conducteurs') ? 'active-nav-link' : ''}">
+                       <i class="fas fa-users mr-1"></i> Conducteurs
+                    </a>
+                    <a th:href="@{/web/vehicules}" class="px-3 py-2 rounded hover:bg-blue-700 transition"
+                       th:classappend="${currentUrl.contains('/vehicules') ? 'active-nav-link' : ''}">
+                       <i class="fas fa-car mr-1"></i> Véhicules
+                    </a>
+                    <a th:href="@{/web/missions}" class="px-3 py-2 rounded hover:bg-blue-700 transition"
+                       th:classappend="${currentUrl.contains('/missions') ? 'active-nav-link' : ''}">
+                       <i class="fas fa-clipboard-list mr-1"></i> Missions
+                    </a>
+                    <a th:href="@{/web/rapport}" class="px-3 py-2 rounded hover:bg-blue-700 transition"
+                       th:classappend="${currentUrl.contains('/rapport') ? 'active-nav-link' : ''}">
+                       <i class="fas fa-file-alt mr-1"></i> Rapports
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Menu utilisateur pour les utilisateurs connectés -->
+                <div class="relative" x-data="{ open: false }" sec:authorize="isAuthenticated()">
+                    <button @click="open = !open" class="flex items-center space-x-1 px-3 py-2 rounded hover:bg-blue-700 transition">
+                        <i class="fas fa-user-circle"></i>
+                        <span sec:authentication="name" class="hidden sm:inline">Utilisateur</span>
+                        <i class="fas fa-caret-down"></i>
+                    </button>
+                    
+                    <div x-show="open" @click.away="open = false" x-cloak 
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                        <div class="py-1">
+                            <a th:href="@{/logout}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Déconnexion
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Liens de connexion/inscription pour les utilisateurs non connectés -->
+                <div class="space-x-2" sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/login}" class="px-3 py-2 rounded bg-blue-700 hover:bg-blue-800 transition">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Connexion
+                    </a>
+                    <a th:href="@{/register}" class="px-3 py-2 rounded border border-white hover:bg-blue-700 transition">
+                        <i class="fas fa-user-plus mr-1"></i> Inscription
+                    </a>
+                </div>
+                
+                <!-- Bouton menu mobile -->
+                <button class="md:hidden px-2 py-1 rounded hover:bg-blue-700 transition" 
+                        x-data="{ open: false }" @click="open = !open" 
+                        x-init="$watch('open', value => document.getElementById('mobile-menu').classList.toggle('hidden', !value))">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Menu mobile -->
+        <div id="mobile-menu" class="hidden md:hidden bg-blue-700 pb-2">
+            <nav class="container mx-auto px-4 flex flex-col space-y-2" sec:authorize="isAuthenticated()">
+                <a th:href="@{/web/dashboard}" class="px-3 py-2 rounded hover:bg-blue-800 transition">
+                    <i class="fas fa-chart-line mr-2"></i> Tableau de bord
+                </a>
+                <a th:href="@{/web/conducteurs}" class="px-3 py-2 rounded hover:bg-blue-800 transition">
+                    <i class="fas fa-users mr-2"></i> Conducteurs
+                </a>
+                <a th:href="@{/web/vehicules}" class="px-3 py-2 rounded hover:bg-blue-800 transition">
+                    <i class="fas fa-car mr-2"></i> Véhicules
+                </a>
+                <a th:href="@{/web/missions}" class="px-3 py-2 rounded hover:bg-blue-800 transition">
+                    <i class="fas fa-clipboard-list mr-2"></i> Missions
+                </a>
+                <a th:href="@{/web/rapport}" class="px-3 py-2 rounded hover:bg-blue-800 transition">
+                    <i class="fas fa-file-alt mr-2"></i> Rapports
+                </a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Alertes et notifications -->
+    <div th:fragment="notification" class="container mx-auto px-4 py-2" th:if="${successMessage != null || errorMessage != null || infoMessage != null}">
+        <div class="alert bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" 
+             th:if="${successMessage != null}" th:text="${successMessage}">
+            Message de succès
+        </div>
+        
+        <div class="alert bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" 
+             th:if="${errorMessage != null}" th:text="${errorMessage}">
+            Message d'erreur
+        </div>
+        
+        <div class="alert bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4" 
+             th:if="${infoMessage != null}" th:text="${infoMessage}">
+            Message d'information
+        </div>
+    </div>
+    
+    <!-- Contenu principal -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <!-- Le contenu de la page sera inséré ici -->
+        <th:block th:replace="${content}">Contenu de la page</th:block>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script th:fragment="scripts">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialisation de flatpickr pour les sélecteurs de date
+            flatpickr(".datepicker", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                time_24hr: true
+            });
+            
+            // Fermer automatiquement les alertes après 5 secondes
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    alert.style.display = 'none';
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

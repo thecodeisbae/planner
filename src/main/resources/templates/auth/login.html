@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Gestion des Missions</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lexend', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- Header simplifié -->
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">Gestion des Missions</a>
+        </div>
+    </header>
+    
+    <!-- Alertes -->
+    <div class="container mx-auto px-4 pt-6">        
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" 
+             th:if="${param.logout != null}">
+            Vous avez été déconnecté avec succès.
+        </div>
+        
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" 
+             th:if="${param.error != null}">
+            Nom d'utilisateur ou mot de passe incorrect.
+        </div>
+    </div>
+    
+    <!-- Formulaire de connexion -->
+    <main class="flex-grow container mx-auto px-4 py-6 flex justify-center items-center">
+        <div class="w-full max-w-md">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-8">
+                    <h2 class="text-2xl font-bold text-center text-gray-800 mb-8">Connexion</h2>
+                    
+                    <form th:action="@{/login}" method="post">
+                        <div class="mb-6">
+                            <label for="username" class="block text-gray-700 text-sm font-semibold mb-2">
+                                Nom d'utilisateur
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </span>
+                                <input type="text" id="username" name="username" required
+                                       class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Entrez votre nom d'utilisateur">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <label for="password" class="block text-gray-700 text-sm font-semibold">
+                                    Mot de passe
+                                </label>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <i class="fas fa-lock text-gray-400"></i>
+                                </span>
+                                <input type="password" id="password" name="password" required
+                                       class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       placeholder="Entrez votre mot de passe">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6 flex items-center">
+                            <input type="checkbox" id="remember-me" name="remember-me" 
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                                Se souvenir de moi
+                            </label>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <button type="submit" 
+                                    class="w-full bg-blue-600 text-white rounded-lg py-2 px-4 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                                <i class="fas fa-sign-in-alt mr-2"></i> Se connecter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer simplifié -->
+    <footer class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+        </div>
+    </footer>
+    
+</body>
+</html>

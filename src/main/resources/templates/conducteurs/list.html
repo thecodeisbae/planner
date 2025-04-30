@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conducteurs - Gestion des Missions</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style th:replace="~{layout/main :: styles}"></style>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lexend', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- En-tête -->
+    <div th:replace="~{layout/main :: header}"></div>
+    
+    <!-- Notification -->
+    <div th:replace="~{layout/main :: notification}"></div>
+
+    <!-- Contenu principal -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        
+        <!-- Titre de la page et bouton d'ajout -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+                <i class="fas fa-users mr-2"></i> Conducteurs
+            </h1>
+            <a th:href="@{/web/conducteurs/new}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                <i class="fas fa-plus mr-2"></i> Ajouter un conducteur
+            </a>
+        </div>
+        
+        <!-- Filtres et recherche -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="w-full md:w-1/3">
+                   <!-- Barre de recherche -->
+                    <form th:action="@{/web/conducteurs/search}" method="get" class="flex gap-4">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </span>
+                                <input 
+                                    type="text" 
+                                    name="query" 
+                                    th:value="${query}" 
+                                    class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Rechercher par matricule, nom, prénom ou téléphone...">
+                            </div>
+                        </div>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-search mr-2"></i> Rechercher
+                        </button>
+                        <a th:if="${query != null}" th:href="@{/web/conducteurs}" 
+                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                            <i class="fas fa-times mr-2"></i> Réinitialiser
+                        </a>
+                    </form>
+                </div>
+                
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">Tous <span class="bg-gray-700 text-white rounded-full px-2 py-0.5 ml-1" th:text="${conducteurs.size()}">8</span></span>
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">Disponibles <span class="bg-green-700 text-white rounded-full px-2 py-0.5 ml-1" th:text="${totalConducteursSansMission}">0</span></span>
+                    <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm">En mission <span class="bg-amber-700 text-white rounded-full px-2 py-0.5 ml-1" th:text="${totalConducteursEnMission}">0</span></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alerte si aucun conducteur -->
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" th:if="${conducteurs.empty}">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm">Aucun conducteur n'est enregistré. Cliquez sur "Ajouter un conducteur" pour commencer.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Liste des conducteurs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" th:if="${!conducteurs.empty}">
+            <div th:each="conducteur : ${conducteurs}" class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                <span th:text="${conducteur.prenom + ' ' + conducteur.nom}">Jean Dupont</span>
+                            </h3>
+                            <p class="text-gray-600">
+                                <i class="fas fa-id-card mr-1"></i>
+                                <span th:text="${conducteur.matricule}">C001</span>
+                            </p>
+                        </div>
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div x-show="open" @click.away="open = false" 
+                                 class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200" 
+                                 x-cloak>
+                                <div class="py-1">
+                                    <a th:href="@{/web/conducteurs/{id}/edit(id=${conducteur.id})}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-edit mr-2"></i> Modifier
+                                    </a>
+                                    <a th:href="@{/web/missions(conducteurId=${conducteur.id})}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-clipboard-list mr-2"></i> Voir les missions
+                                    </a>
+                                    <form th:action="@{/web/conducteurs/{id}/delete(id=${conducteur.id})}" 
+                                        method="post" 
+                                        onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce conducteur ?');">
+                                        <input type="hidden" name="_method" value="delete"/>
+                                        <button type="submit" 
+                                                class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                            <i class="fas fa-trash-alt mr-2"></i> Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-phone-alt text-gray-400 mr-2"></i>
+                        <span th:text="${conducteur.telephone} ?: 'Non renseigné'" class="text-gray-600">0611223344</span>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="text-sm font-medium text-gray-500 mb-1">Statut actuel :</div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                            th:classappend="${conducteurDisponibilite.get(conducteur.id)} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                            <i class="fas fa-circle mr-1 text-xs"
+                            th:classappend="${conducteurDisponibilite.get(conducteur.id)} ? 'text-green-500' : 'text-red-500'"></i> 
+                            <span th:text="${conducteurDisponibilite.get(conducteur.id)} ? 'Disponible' : 'Non disponible'">Disponible</span>
+                        </span>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="text-sm font-medium text-gray-500 mb-1">Statistiques :</div>
+                        <div class="grid grid-cols-1 gap-2 text-center">
+                            <div class="bg-gray-50 rounded p-2">
+                                <div class="text-lg font-semibold text-gray-700" th:text="${conducteur.missions.size()}">8</div>
+                                <div class="text-xs text-gray-500">Missions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                    <a th:href="@{'/web/conducteurs/' + ${conducteur.id}}" class="text-blue-600 hover:text-blue-800 text-sm flex items-center justify-center">
+                        <span>Voir le profil complet</span>
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="flex justify-center mt-8" th:if="${!conducteurs.empty && conducteurs.size() > 10}">
+            <nav class="inline-flex rounded-md shadow">
+                <a href="#" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <a href="#" class="px-3 py-2 border-t border-b border-gray-300 bg-blue-50 text-blue-600 border-blue-500">
+                    1
+                </a>
+                <a href="#" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    2
+                </a>
+                <a href="#" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    3
+                </a>
+                <a href="#" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </nav>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script th:replace="~{layout/main :: scripts}" ></script>
+</body>
+</html>

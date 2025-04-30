@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord - Gestion des Missions</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style th:replace="~{layout/main :: styles}"></style>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lexend', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- En-tête -->
+    <div th:replace="~{layout/main :: header}"></div>
+    
+    <!-- Contenu principal -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <!-- Titre de la page -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-chart-line mr-2"></i> Tableau de bord
+            </h1>
+            <div class="text-gray-600">
+                <i class="far fa-calendar-alt mr-1"></i> 
+                <span th:text="${#temporals.format(#temporals.createNow(), 'dd MMMM yyyy')}">21 avril 2025</span>
+            </div>
+        </div>
+        
+        <!-- Message de bienvenue -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">
+                Bienvenue, <span th:text="${username}" class="text-blue-600">Utilisateur</span> !
+            </h2>
+            <p class="text-gray-600">
+                Bienvenue dans le système de gestion des missions des conducteurs de véhicules administratifs.
+                Ce tableau de bord vous donne un aperçu des informations importantes et des statistiques.
+            </p>
+        </div>
+        
+        <!-- Statistiques en cartes -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <!-- Carte Conducteurs -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 bg-blue-600 text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold">Conducteurs</h3>
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-3xl font-bold text-gray-800" th:text="${totalConducteurs}">8</p>
+                    <p class="text-sm text-gray-600">Conducteurs enregistrés</p>
+                </div>
+                <div class="px-4 py-2 bg-gray-50 border-t border-gray-200">
+                    <a th:href="@{/web/conducteurs}" class="text-blue-600 hover:underline text-sm flex items-center">
+                        <span>Voir tous les conducteurs</span>
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Carte Véhicules -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 bg-green-600 text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold">Véhicules</h3>
+                        <i class="fas fa-car text-2xl"></i>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-3xl font-bold text-gray-800" th:text="${totalVehicules}">12</p>
+                    <p class="text-sm text-gray-600">Véhicules disponibles</p>
+                </div>
+                <div class="px-4 py-2 bg-gray-50 border-t border-gray-200">
+                    <a th:href="@{/web/vehicules}" class="text-green-600 hover:underline text-sm flex items-center">
+                        <span>Voir tous les véhicules</span>
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Carte Missions -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 bg-purple-600 text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold">Missions</h3>
+                        <i class="fas fa-clipboard-list text-2xl"></i>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-3xl font-bold text-gray-800" th:text="${totalMissions}">24</p>
+                    <p class="text-sm text-gray-600">Missions totales</p>
+                </div>
+                <div class="px-4 py-2 bg-gray-50 border-t border-gray-200">
+                    <a th:href="@{/web/missions}" class="text-purple-600 hover:underline text-sm flex items-center">
+                        <span>Voir toutes les missions</span>
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Carte Missions en cours -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 bg-amber-600 text-white">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-semibold">En cours</h3>
+                        <i class="fas fa-hourglass-half text-2xl"></i>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-3xl font-bold text-gray-800" th:text="${missionsEnCours}">5</p>
+                    <p class="text-sm text-gray-600">Missions en cours</p>
+                </div>
+                <div class="px-4 py-2 bg-gray-50 border-t border-gray-200">
+                    <a th:href="@{/web/rapport}" class="text-amber-600 hover:underline text-sm flex items-center">
+                        <span>Générer un rapport</span>
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Graphiques et tableaux -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Graphique des statuts de mission -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Répartition des missions</h3>
+                <div class="h-64">
+                    <canvas id="missionsChart"></canvas>
+                </div>
+                <script th:inline="javascript">
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Correct way to get canvas context
+                        const ctx = document.getElementById('missionsChart');
+                        
+                        // Check if ctx exists
+                        if (!ctx) {
+                            console.error('Canvas element not found');
+                            return;
+                        }
+
+                        try {
+                            // Correctly get the 2D rendering context
+                            const context = ctx.getContext('2d');
+                            
+                            // Ensure we have the correct context
+                            if (!context) {
+                                console.error('Unable to get 2D context');
+                                return;
+                            }
+
+                            // Retrieve data from Thymeleaf
+                            const planifiees = [[${missionsPlanifiees}]];
+                            const enCours = [[${missionsEnCours}]];
+                            const terminees = [[${missionsTerminees}]];
+                            const annulees = [[${missionsAnnulees}]];
+
+
+                            // Create the chart
+                            new Chart(context, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Planifiées', 'En cours', 'Terminées','Annulées'],
+                                    datasets: [{
+                                        data: [planifiees, enCours, terminees,annulees],
+                                        backgroundColor: [
+                                            '#3B82F6', // blue-500
+                                            '#10B981', // green-500
+                                            '#8B5CF6',  // purple-500
+                                            '#EF4444'  // red
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom',
+                                        }
+                                    }
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Chart creation error:', error);
+                        }
+                    });    
+                </script>
+            </div>
+            
+            <!-- Prochaines missions -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Prochaines missions</h3>
+                
+                <div class="overflow-x-auto" th:if="${!prochainesMissions.empty}">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Date
+                                </th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Conducteur
+                                </th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Destination
+                                </th>
+                                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Statut
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="mission : ${prochainesMissions}" class="hover:bg-gray-50">
+                                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                    <span th:text="${#temporals.format(mission.dateDebut, 'dd/MM HH:mm')}">21/04 08:00</span>
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                    <span th:text="${mission.conducteur.prenom + ' ' + mission.conducteur.nom}">Jean Dupont</span>
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                                    <span th:text="${mission.destination}">Paris</span>
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                    <span th:switch="${mission.statut}">
+                                        <span th:case="${T(eneam.tp.planner.models.Mission.StatutMission).PLANIFIEE}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            Planifiée
+                                        </span>
+                                        <span th:case="${T(eneam.tp.planner.models.Mission.StatutMission).EN_COURS}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            En cours
+                                        </span>
+                                        <span th:case="${T(eneam.tp.planner.models.Mission.StatutMission).TERMINEE}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                            Terminée
+                                        </span>
+                                        <span th:case="${T(eneam.tp.planner.models.Mission.StatutMission).ANNULEE}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Annulée
+                                        </span>
+                                        <span th:case="*" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            Inconnu
+                                        </span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-center py-4" th:if="${prochainesMissions.empty}">
+                    <p class="text-gray-500">Aucune mission à venir dans les 7 prochains jours</p>
+                </div>
+                
+                <div class="mt-4 text-right">
+                    <a th:href="@{/web/missions}" class="text-blue-600 hover:underline text-sm flex items-center justify-end">
+                        <span>Voir toutes les missions</span>
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions rapides -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions rapides</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a th:href="@{/web/missions/new}" class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                    <div class="rounded-full bg-blue-500 py-2 px-3 mr-4 text-white">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">Nouvelle mission</h4>
+                        <p class="text-sm text-gray-600">Créer une mission</p>
+                    </div>
+                </a>
+                
+                <a th:href="@{/web/conducteurs/new}" class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+                    <div class="rounded-full bg-green-500 py-2 px-3 mr-4 text-white">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">Nouveau conducteur</h4>
+                        <p class="text-sm text-gray-600">Ajouter un conducteur</p>
+                    </div>
+                </a>
+                
+                <a th:href="@{/web/rapport}" class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
+                    <div class="rounded-full bg-purple-500 py-2 px-3 mr-4 text-white">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800">Générer un rapport</h4>
+                        <p class="text-sm text-gray-600">Créer un rapport périodique</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+</body>
+</html>

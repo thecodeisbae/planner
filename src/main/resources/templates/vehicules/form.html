@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Véhicule - Gestion des Missions</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    
+    
+    <style th:replace="~{layout/main :: styles}"></style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lexend', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>    
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- En-tête -->
+    <div th:replace="~{layout/main :: header}"></div>
+    <!-- Notification -->
+    <div th:replace="~{layout/main :: notification}"></div>
+    
+    <!-- Contenu principal -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        
+        <!-- Titre de la page -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-car mr-2"></i> 
+                <span th:text="${vehicule.id == null} ? 'Ajouter un véhicule' : 'Modifier le véhicule'">Formulaire Véhicule</span>
+            </h1>
+            <p class="text-gray-600">Remplissez les informations du véhicule ci-dessous.</p>
+        </div>
+        
+        <!-- Formulaire -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <form th:action="${vehicule.id == null} ? @{/web/vehicules/save} : @{/web/vehicules/{id}/update(id=${vehicule.id})}" th:object="${vehicule}" method="post" class="p-6">
+                <input type="hidden" th:field="*{id}" />
+                
+                <!-- Informations d'identification -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="immatriculation" class="block text-sm font-medium text-gray-700 mb-1">
+                            Immatriculation*
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-tag text-gray-400"></i>
+                            </span>
+                            <input type="text" id="immatriculation" th:field="*{immatriculation}" required
+                                   class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Ex: AA-123-BB">
+                        </div>
+                        <p th:if="${#fields.hasErrors('immatriculation')}" th:errors="*{immatriculation}" 
+                           class="mt-1 text-sm text-red-600">Erreur d'immatriculation</p>
+                    </div>
+                    
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">
+                            Type de véhicule*
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-truck text-gray-400"></i>
+                            </span>
+                            <select id="type" th:field="*{type}" required 
+                                    class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
+                                <option value="">Sélectionnez un type</option>
+                                <option th:each="typeOption : ${T(eneam.tp.planner.models.Vehicule.TypeVehicule).values()}"
+                                        th:value="${typeOption}" 
+                                        th:text="${typeOption.name()}">BERLINE</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                        <p th:if="${#fields.hasErrors('type')}" th:errors="*{type}" 
+                           class="mt-1 text-sm text-red-600">Erreur de type</p>
+                    </div>
+                </div>
+                
+                <!-- Informations du véhicule -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-medium text-gray-800 mb-3">Caractéristiques du véhicule</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="marque" class="block text-sm font-medium text-gray-700 mb-1">
+                                Marque*
+                            </label>
+                            <input type="text" id="marque" th:field="*{marque}" required
+                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Ex: Renault">
+                            <p th:if="${#fields.hasErrors('marque')}" th:errors="*{marque}" 
+                               class="mt-1 text-sm text-red-600">Erreur de marque</p>
+                        </div>
+                        
+                        <div>
+                            <label for="modele" class="block text-sm font-medium text-gray-700 mb-1">
+                                Modèle*
+                            </label>
+                            <input type="text" id="modele" th:field="*{modele}" required
+                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Ex: Clio">
+                            <p th:if="${#fields.hasErrors('modele')}" th:errors="*{modele}" 
+                               class="mt-1 text-sm text-red-600">Erreur de modèle</p>
+                        </div>
+                        
+                        <div>
+                            <label for="annee" class="block text-sm font-medium text-gray-700 mb-1">
+                                Année
+                            </label>
+                            <input type="number" id="annee" th:field="*{annee}" min="1990" max="2030"
+                                   class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   placeholder="Ex: 2022">
+                            <p th:if="${#fields.hasErrors('annee')}" th:errors="*{annee}" 
+                               class="mt-1 text-sm text-red-600">Erreur d'année</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Boutons d'action -->
+                <div class="flex justify-between">
+                    <a th:href="@{/web/vehicules}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
+                    </a>
+                    <div>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-save mr-2"></i> Enregistrer
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script th:replace="~{layout/main :: scripts}" ></script>
+</body>
+</html>

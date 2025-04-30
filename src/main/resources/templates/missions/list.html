@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missions - Gestion des Missions</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style th:replace="~{layout/main :: styles}"></style>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.0/dist/cdn.min.js"></script>
+    
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lexend', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- En-tête -->
+    <div th:replace="~{layout/main :: header}"></div>
+
+    <!-- Notification -->
+    <div th:replace="~{layout/main :: notification}"></div>
+    
+    <!-- Contenu principal -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        
+        <!-- Titre de la page et bouton d'ajout -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+                <i class="fas fa-clipboard-list mr-2"></i> Missions
+            </h1>
+            <a th:href="@{/web/missions/new}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+                <i class="fas fa-plus mr-2"></i> Créer une mission
+            </a>
+        </div>
+        
+        <!-- Filtres et recherche -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-6" x-data="{ showFilters: false }">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+                <div class="w-full md:w-1/3">
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Rechercher une mission..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-wrap gap-2">
+                    <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm">Toutes <span class="bg-gray-700 text-white rounded-full px-2 py-0.5 ml-1" th:text="${missions.size()}">24</span></span>
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Planifiées <span class="bg-blue-700 text-white rounded-full px-2 py-0.5 ml-1" th:text="${missionsPlanifiees}">12</span></span>
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">En cours <span class="bg-green-700 text-white rounded-full px-2 py-0.5 ml-1" th:text="${missionsEnCours}">8</span></span>
+                    <span class="bg-red-800 text-white px-3 py-1 rounded-full text-sm">Annulées <span class="bg-white text-red-800 rounded-full px-2 py-0.5 ml-1" th:text="${missionsAnnulees}">4</span></span>
+                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">Terminées <span class="bg-purple-700 text-white rounded-full px-2 py-0.5 ml-1" th:text="${missionsTerminees}">4</span></span>
+                </div>
+                
+                <button @click="showFilters = !showFilters" class="text-blue-600 hover:text-blue-800 flex items-center">
+                    <i class="fas fa-filter mr-1"></i> Filtres
+                    <i class="fas" :class="showFilters ? 'fa-chevron-up ml-1' : 'fa-chevron-down ml-1'"></i>
+                </button>
+            </div>
+            
+            <!-- Filtres avancés -->
+            <div x-show="showFilters" x-transition class="border-t border-gray-200 pt-4 mt-2">
+                <form id="filterForm" th:action="@{/web/missions}" method="get">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="conducteurId" class="block text-sm font-medium text-gray-700 mb-1">Conducteur</label>
+                            <select id="conducteurId" name="conducteurId" class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Tous les conducteurs</option>
+                                <option th:each="conducteur : ${conducteurs}" 
+                                        th:value="${conducteur.id}" 
+                                        th:text="${conducteur.prenom + ' ' + conducteur.nom}"
+                                        th:selected="${filtreConducteurId != null && filtreConducteurId == conducteur.id}">
+                                    Jean Dupont
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="vehiculeId" class="block text-sm font-medium text-gray-700 mb-1">Véhicule</label>
+                            <select id="vehiculeId" name="vehiculeId" class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Tous les véhicules</option>
+                                <option th:each="vehicule : ${vehicules}" 
+                                        th:value="${vehicule.id}" 
+                                        th:text="${vehicule.marque + ' ' + vehicule.modele + ' (' + vehicule.immatriculation + ')'}"
+                                        th:selected="${filtreVehiculeId != null && filtreVehiculeId == vehicule.id}">
+                                    Renault Clio (AA-123-BB)
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="statut" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+                            <select id="statut" name="statut" class="w-full rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">Tous les statuts</option>
+                                <option th:each="statutOption : ${T(eneam.tp.planner.models.Mission.StatutMission).values()}" 
+                                        th:value="${statutOption}" 
+                                        th:text="${statutOption}"
+                                        th:selected="${filtreStatut != null && filtreStatut == statutOption.name()}">
+                                    PLANIFIEE
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Période</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="dateDebut" name="dateDebut" placeholder="Date début" 
+                                   th:value="${filtreDateDebut}"
+                                   class="flatpickr w-1/2 rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <input type="text" id="dateFin" name="dateFin" placeholder="Date fin" 
+                                   th:value="${filtreDateFin}"
+                                   class="flatpickr w-1/2 rounded-md border border-gray-300 shadow-sm px-3 py-2 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end mt-4">
+                        <a th:href="@{/web/missions}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg mr-2">
+                            Réinitialiser
+                        </a>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            Appliquer les filtres
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Indicateur de chargement -->
+        <div id="loadingIndicator" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-5 rounded-lg shadow-lg">
+                <div class="flex items-center space-x-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    <p class="text-gray-700">Chargement en cours...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alerte si aucune mission -->
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" th:if="${missions.empty}">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-blue-500"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm">Aucune mission n'est enregistrée. Cliquez sur "Créer une mission" pour commencer.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Liste des missions -->
+        <div class="overflow-hidden rounded-lg shadow-md" th:if="${!missions.empty}">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Mission
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Dates
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Conducteur & Véhicule
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Statut
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr th:each="mission : ${missions}" class="hover:bg-gray-50 mission-row">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900" th:text="${mission.description}">
+                                        Transport de documents
+                                    </div>
+                                    <div class="text-sm text-gray-500" th:text="${mission.destination}">
+                                        Paris
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                <i class="far fa-calendar-alt mr-1 text-gray-400"></i>
+                                <span th:text="${#temporals.format(mission.dateDebut, 'dd/MM/yyyy HH:mm')}">21/04/2025 08:00</span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <i class="far fa-calendar-check mr-1 text-gray-400"></i>
+                                <span th:text="${#temporals.format(mission.dateFin, 'dd/MM/yyyy HH:mm')}">21/04/2025 12:00</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                <i class="fas fa-user mr-1 text-gray-400"></i>
+                                <span th:text="${mission.conducteur.prenom + ' ' + mission.conducteur.nom}">Jean Dupont</span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                <i class="fas fa-car mr-1 text-gray-400"></i>
+                                <span th:text="${mission.vehicule.marque + ' ' + mission.vehicule.modele + ' (' + mission.vehicule.immatriculation + ')'}">Renault Clio (AA-123-BB)</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span th:switch="${mission.statut}">
+                                <span th:case="${T(eneam.tp.planner.models.Mission.StatutMission).PLANIFIEE}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    Planifiée
+                                </span>
+                                <span th:case="${T(eneam.tp.planner.models.Mission.StatutMission).EN_COURS}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    En cours
+                                </span>
+                                <span th:case="${T(eneam.tp.planner.models.Mission.StatutMission).TERMINEE}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                    Terminée
+                                </span>
+                                <span th:case="${T(eneam.tp.planner.models.Mission.StatutMission).ANNULEE}" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    Annulée
+                                </span>
+                                <span th:case="*" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    Inconnu
+                                </span>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a th:href="@{/web/missions/{id}(id=${mission.id})}" class="text-indigo-600 hover:text-indigo-900" title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a th:href="@{/web/missions/{id}/edit(id=${mission.id})}" class="text-blue-600 hover:text-blue-900" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a th:href="@{/web/missions/{id}/annuler(id=${mission.id})}" 
+                                   th:if="${mission.statut != 'ANNULEE' && mission.statut != 'TERMINEE'}"
+                                   class="text-red-600 hover:text-red-900" title="Annuler"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir annuler cette mission ?');">
+                                    <i class="fas fa-ban"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="flex justify-center mt-8" th:if="${!missions.empty && missions.size() > 10}">
+            <nav class="inline-flex rounded-md shadow">
+                <a href="#" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <a href="#" class="px-3 py-2 border-t border-b border-gray-300 bg-blue-50 text-blue-600 border-blue-500">
+                    1
+                </a>
+                <a href="#" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    2
+                </a>
+                <a href="#" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    3
+                </a>
+                <a href="#" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </nav>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialisation de flatpickr pour les sélecteurs de date
+            flatpickr(".flatpickr", {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                time_24hr: true
+            });
+            
+            // Soumettre automatiquement le formulaire lors de la sélection d'un conducteur ou véhicule
+            document.getElementById('conducteurId').addEventListener('change', function() {
+                if (this.value) {
+                    document.getElementById('filterForm').submit();
+                }
+            });
+            
+            document.getElementById('vehiculeId').addEventListener('change', function() {
+                if (this.value) {
+                    document.getElementById('filterForm').submit();
+                }
+            });
+            
+            document.getElementById('statut').addEventListener('change', function() {
+                if (this.value) {
+                    document.getElementById('filterForm').submit();
+                }
+            });
+            
+            // Recherche en temps réel
+            document.getElementById('searchInput').addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                const missionRows = document.querySelectorAll('.mission-row');
+                
+                missionRows.forEach(row => {
+                    const missionText = row.textContent.toLowerCase();
+                    if (missionText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Afficher l'indicateur de chargement lors de la soumission du formulaire
+            document.getElementById('filterForm').addEventListener('submit', function() {
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+            });
+            
+            // Masquer l'indicateur de chargement lorsque la page est chargée
+            window.addEventListener('load', function() {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            });
+        });
+    </script>
+    <script th:replace="~{layout/main :: scripts}" ></script>
+</body>
+</html>
