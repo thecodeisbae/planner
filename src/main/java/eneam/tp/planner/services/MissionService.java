@@ -81,6 +81,10 @@ public class MissionService {
         if (mission.getDescription() == null || mission.getDescription().isEmpty()) {
             throw new IllegalArgumentException("La description est obligatoire");
         }
+
+        if (mission.getDateDebut() != null && mission.getDateFin() != null && mission.getDateDebut().isAfter(mission.getDateFin())) {
+            throw new IllegalArgumentException("La date de début ne peut pas être postérieure à la date de fin");
+        }
         // Récupérer le conducteur et le véhicule
         Conducteur conducteur = conducteurService.getConducteurById(mission.getConducteur().getId());
         Vehicule vehicule = vehiculeService.getVehiculeById(mission.getVehicule().getId());
@@ -116,6 +120,22 @@ public class MissionService {
     // Mettre à jour une mission existante
     public Mission updateMission(Long id, Mission missionDetails) {
         Mission mission = getMissionById(id);
+
+        if (mission == null) {
+            throw new IllegalArgumentException("La mission ne peut pas être nulle");
+        }
+        
+        if (mission.getConducteur() == null || mission.getConducteur().getId() == null) {
+            throw new IllegalArgumentException("Un conducteur doit être sélectionné");
+        }
+        
+        if (mission.getVehicule() == null || mission.getVehicule().getId() == null) {
+            throw new IllegalArgumentException("Un véhicule doit être sélectionné");
+        }
+
+        if (missionDetails.getDateDebut() != null && missionDetails.getDateFin() != null && missionDetails.getDateDebut().isAfter(missionDetails.getDateFin())) {
+            throw new IllegalArgumentException("La date de début ne peut pas être postérieure à la date de fin");
+        }
         
         // Récupérer le conducteur et le véhicule
         Conducteur conducteur = conducteurService.getConducteurById(missionDetails.getConducteur().getId());

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${errorTitle} + ' - Gestion des Missions'">Erreur - Gestion des Missions</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style th:replace="~{layout/main :: styles}"></style>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Lexend', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    
+    <!-- En-tête simplifié -->
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">Gestion des Missions</a>
+            
+            <!-- Navigation principale pour grand écran -->
+            <nav class="hidden md:flex space-x-4">
+                <a href="/" class="px-3 py-2 rounded hover:bg-blue-700 transition">
+                    <i class="fas fa-home mr-1"></i> Accueil
+                </a>
+                <a href="/web/dashboard" class="px-3 py-2 rounded hover:bg-blue-700 transition">
+                    <i class="fas fa-chart-line mr-1"></i> Tableau de bord
+                </a>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Contenu principal -->
+    <main class="flex-grow container mx-auto px-4 py-12 flex flex-col items-center justify-center">
+        <div class="text-center">
+            <div class="mb-6 flex justify-center">
+                <div class="relative">
+                    <i class="fas fa-exclamation-triangle text-8xl text-yellow-500"></i>
+                    <div th:if="${errorCode != null && !errorCode.isEmpty()}" 
+                         class="absolute -top-2 -right-2 bg-red-500 text-white h-8 w-8 rounded-full flex items-center justify-center font-bold"
+                         th:text="${errorCode}">
+                        500
+                    </div>
+                </div>
+            </div>
+            
+            <h1 class="text-4xl font-bold text-gray-800 mb-4" th:text="${errorTitle}">Erreur Serveur</h1>
+            
+            <p class="text-xl text-gray-600 mb-8 max-w-lg mx-auto" th:text="${errorMessage}">
+                Une erreur s'est produite lors du traitement de votre demande.
+            </p>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md mb-8 max-w-md mx-auto">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Que faire maintenant ?</h2>
+                <ul class="text-left space-y-3">
+                    <li class="flex items-center">
+                        <i class="fas fa-redo text-blue-500 mr-2"></i>
+                        <span>Rafraîchir la page et réessayer</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-home text-blue-500 mr-2"></i>
+                        <span>Retourner à la <a href="/" class="text-blue-600 hover:underline">page d'accueil</a></span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-chart-line text-blue-500 mr-2"></i>
+                        <span>Accéder au <a href="/web/dashboard" class="text-blue-600 hover:underline">tableau de bord</a></span>
+                    </li>
+                    <li class="flex items-center" sec:authorize="isAuthenticated()">
+                        <i class="fas fa-clipboard-list text-blue-500 mr-2"></i>
+                        <span>Consulter vos <a href="/web/missions" class="text-blue-600 hover:underline">missions</a></span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                <a href="javascript:history.back()" class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Page précédente
+                </a>
+                <a href="/" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">
+                    <i class="fas fa-home mr-2"></i> Accueil
+                </a>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 Gestion des Missions. Tous droits réservés.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+</body>
+</html>
